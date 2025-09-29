@@ -1,0 +1,61 @@
+---
+- name: Install required packages
+  package:
+    name:
+      - python3
+      - python3-pip
+      - firewalld
+    state: present
+
+- name: Create python-metrics-app user
+  user:
+    name: python-metrics-app
+    system: yes
+    create_home: no
+    shell: /sbin/nologin
+
+- name: Create python-metrics-app directory
+  file:
+    path: /opt/python-metrics-app
+    state: directory
+    owner: python-metrics-app
+    group: python-metrics-app
+    mode: '0755'
+
+- name: Copy python-metrics-app files
+  copy:
+    src: "{{ item }}"
+    dest: /opt/python-metrics-app/
+    owner: python-metrics-app
+    group: python-metrics-app
+    mode: '0644'
+  loop:
+    - app.py
+    - requirements.txt
+
+- name: Install Python dependencies
+  pip:
+    requirements: /opt/python-metrics-app/requirements.txt
+    executable: pip3
+
+- name: Create systemd service
+  template:
+    src: python-metrics-app.service.j2
+    dest: /etc/systemd/system/python-metrics-app.service
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Configure firewall
+  firewalld:
+    port: 8080/tcp
+    permanent: yes
+    state: enabled
+    immediate: yes
+
+- name: Start and enable python-metrics-app
+  systemd:
+    name: python-metrics-app
+    state: started
+    enabled: yes
+    daemon_reload: yes

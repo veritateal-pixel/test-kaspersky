@@ -1,0 +1,19 @@
+---
+- name: Deploy python-metrics-app to VM # запуск на вм
+  hosts: all
+  become: yes
+  vars:
+    container_mode: false
+  
+  roles:
+    - role: python-metrics-app
+      when: not container_mode
+
+- name: Deploy python-metrics-app as Container #запуск как контейнер(бонус 1)
+  hosts: all
+  become: yes
+  vars:
+    container_mode: true
+  
+  roles:
+    - role: python-metrics-app

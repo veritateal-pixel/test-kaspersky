@@ -1,0 +1,15 @@
+[Unit]
+Description=python-metrics-app prometheus exporter
+After=network.target
+
+[Service]
+Type=simple
+User=python-metrics-app
+Group=python-metrics-app
+WorkingDirectory=/opt/python-metrics-app
+ExecStart=/usr/bin/python3 /opt/python-metrics-app/app.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

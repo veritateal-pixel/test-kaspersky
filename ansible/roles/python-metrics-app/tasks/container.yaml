@@ -1,0 +1,39 @@
+---
+- name: Install Docker
+  package:
+    name: docker
+    state: present
+  when: container_mode | default(false)
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  when: container_mode | default(false)
+
+- name: Build Docker image
+  community.docker.docker_image:
+    build:
+      path: "{{ playbook_dir }}/../python-metrics-app"
+      pull: yes
+    name: python-metrics-app
+    source: build
+    force_source: yes
+  when: container_mode | default(false)
+
+- name: Stop and remove existing container
+  community.docker.docker_container:
+    name: python-metrics-app
+    state: absent
+  when: container_mode | default(false)
+
+- name: Run python-metrics-app container
+  community.docker.docker_container:
+    name: python-metrics-app
+    image: python-metrics-app
+    state: started
+    restart_policy: always
+    ports:
+      - "8080:8080"
+  when: container_mode | default(false)
