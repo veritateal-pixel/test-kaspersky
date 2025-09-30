@@ -8,7 +8,6 @@
 Yandex Cloud аккаунт
 Terraform >= 1.0
 Ansible >= 2.9
-Установка и запуск
 
 # Клонируйте репозиторий
 git clone <repository-url>
