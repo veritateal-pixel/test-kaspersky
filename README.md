@@ -10,7 +10,7 @@ Terraform >= 1.0
 Ansible >= 2.9
 
 # Клонируйте репозиторий
-git clone [<repository-url>](https://github.com/veritateal-pixel/test-kaspersky)
+git clone https://github.com/veritateal-pixel/test-kaspersky
 
 # Запустите развертывание в режиме контейнера (Docker)
 
