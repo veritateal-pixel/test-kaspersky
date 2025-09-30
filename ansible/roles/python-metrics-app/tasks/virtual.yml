@@ -1,0 +1,56 @@
+---
+- name: Update system packages (with timeout)
+  command: dnf update -y --nobest --allowerasing
+  ignore_errors: yes
+  retries: 2
+
+- name: Install Python3 and pip (raw command)
+  command: dnf install -y python3 python3-pip --nobest --allowerasing --skip-broken
+  retries: 2
+
+- name: Create python-metrics-app directory
+  file:
+    path: /opt/python-metrics-app
+    state: directory
+    mode: '0755'
+
+- name: Copy app.py
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: '../python-metrics-app/main.py', dest: '/opt/python-metrics-app/main.py', mode: '0755' }
+    - { src: '../python-metrics-app/requirements.txt', dest: '/opt/python-metrics-app/requirements.txt', mode: '0644' }
+
+- name: Install Python dependencies
+  pip:
+    requirements: /opt/python-metrics-app/requirements.txt
+    executable: pip3
+
+- name: Create systemd service
+  copy:
+    content: |
+      [Unit]
+      Description=python-metrics-app Prometheus Exporter
+      After=network.target
+
+      [Service]
+      Type=simple
+      User=almalinux
+      WorkingDirectory=/opt/python-metrics-app
+      ExecStart=/usr/bin/python3.9 /opt/python-metrics-app/main.py
+      Restart=always
+      RestartSec=5
+
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/python-metrics-app.service
+    mode: '0644'
+
+- name: Start and enable python-metrics-app
+  systemd:
+    name: python-metrics-app
+    state: started
+    enabled: yes
+    daemon_reload: yes

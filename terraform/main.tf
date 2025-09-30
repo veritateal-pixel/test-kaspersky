@@ -10,7 +10,7 @@ resource "yandex_compute_instance" "python-metrics-app_vm" {
 
   boot_disk {
     initialize_params {
-      image_id = "fd8vmcue6aagj7rb33b6" # Альма
+      image_id = "fd8buc1b6pmteep2nri4" # Альма
       size     = 20
     }
   }

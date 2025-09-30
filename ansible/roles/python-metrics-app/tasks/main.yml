@@ -1,0 +1,8 @@
+---
+- name: Include bare metal
+  import_tasks: virtual.yml
+  when: virtual_mode | default(false)
+
+- name: Include container  
+  import_tasks: container.yml
+  when: container_mode | default(false)

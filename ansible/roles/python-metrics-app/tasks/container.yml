@@ -1,0 +1,91 @@
+---
+- name: Remove Podman and conflicting packages
+  package:
+    name:
+      - podman
+      - podman-docker
+      - buildah
+    state: absent
+  delay: 60
+  retries: 2
+
+
+- name: Clean up Docker conflicts
+  command: dnf remove -y docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+  ignore_errors: yes
+  changed_when: false
+  delay: 60
+  retries: 2
+
+- name: Install required dependencies
+  package:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+  delay: 60
+  retries: 2
+
+- name: Add Docker CE repository for CentOS 9
+  command: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install Docker CE
+  package:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  delay: 60
+  retries: 2
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Test Docker installation as user
+  command: docker --version
+
+- name: Create python-metrics-app directory
+  file:
+    path: /opt/python-metrics-app
+    state: directory
+
+- name: Copy python-metrics-app files
+  copy:
+    src: "{{ item.src }}"
+    dest: "/opt/python-metrics-app/{{ item.dest }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { src: '{{ playbook_dir }}/../python-metrics-app/main.py', dest: 'main.py', mode: '0644' }
+    - { src: '{{ playbook_dir }}/../python-metrics-app/requirements.txt', dest: 'requirements.txt', mode: '0644' }
+    - { src: '{{ playbook_dir }}/../python-metrics-app/Dockerfile', dest: 'Dockerfile', mode: '0644' }
+
+- name: Build Docker image
+  command: docker build -t python-metrics-app /opt/python-metrics-app
+
+- name: Stop and remove existing container
+  command: |
+    docker stop python-metrics-app || true
+    docker rm python-metrics-app || true
+  ignore_errors: yes
+  changed_when: false
+
+- name: Run python-metrics-app container
+  command: |
+    docker run -d \
+      --name python-metrics-app \
+      -p 8080:8080 \
+      --restart unless-stopped \
+      python-metrics-app
+
+- name: Wait for container to start
+  pause:
+    seconds: 5
