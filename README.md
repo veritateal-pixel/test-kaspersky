@@ -11,7 +11,6 @@ Ansible >= 2.9
 
 # Клонируйте репозиторий
 git clone <repository-url>
-cd microservice-deployment
 
 # Запустите развертывание в режиме контейнера (Docker)
 
