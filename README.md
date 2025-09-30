@@ -14,7 +14,14 @@ cd microservice-deployment
 
 # Запустите развертывание
 sudo sh deploy.sh container # для запуска в режиме контейнера(докер)
+
+![Container](./images/container.png)
+
+
 sudo sh deploy.sh virtual # для запуска в режиме сервиса systemd
+
+![Container](./images/virt.png)
+
 
 
 📁 Структура проекта
